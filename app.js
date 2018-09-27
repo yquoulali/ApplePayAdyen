@@ -20,11 +20,11 @@ const request = require("request");
 * with the appropriate merchant identifier and domain
 * See the README for more information.
 */
-const APPLE_PAY_CERTIFICATE_PATH = "./certificates/merchant_com_se_fnb_test_chanel.pem";
+const APPLE_PAY_CERTIFICATE_PATH = "./certificates/merchant.pem";
 const SSL_CERTIFICATE_PATH = "./certificates/cert.cert";
 const SSL_KEY_PATH = "./certificates/key.key";
-const MERCHANT_IDENTIFIER = "merchant.com.se.fnb.test.chanel";
-const MERCHANT_DOMAIN = "uat-v3-www.chanel.com";
+const MERCHANT_IDENTIFIER = "merchant.com.se.fnb.test.xx";
+const MERCHANT_DOMAIN = "uat-v3-www.xx.com";
 
 try {
   fs.accessSync(APPLE_PAY_CERTIFICATE_PATH);
@@ -103,12 +103,8 @@ app.post('/doAuth', function (req, res) {
 		  }
 		},
 		auth : {
-			/*
-			user : 'ws_255427@Company.Chanel',
-			pass : '!7a97Yp^cZt]C&R*9tp+=dp35'
-			*/
-			user : 'ws_444433@Company.Chanel',
-			pass : '2mvZ}rQ*u^btvm#bTH-5rJsQ6'
+			user : 'ws_xx@Company.xx',
+			pass : 'xxxx'
 		},
 		json: true,
 	}
