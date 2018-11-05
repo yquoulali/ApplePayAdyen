@@ -1,18 +1,19 @@
 {
-  "name": "emporium-web",
-  "version": "1.0.0",
+  "name": "ApplePayWithAdyen",
+  "version": "1.1.0",
   "description": "An example Apple Pay website",
   "main": "app.js",
   "scripts": {
     "start": "nodemon ./app.js --exec babel-node"
   },
-  "author": "Apple Inc.",
+  "author": "yquoulali",
   "license": "SEE LICENSE IN LICENSE.TXT",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "express": "^3.21.2",
+    "express": "^4.16.4",
     "express-generator": "^4.16.0",
     "nodemon": "^1.9.2",
+    "properties-reader": "0.0.16",
     "request": "^2.73.0",
     "request-debug": "^0.2.0",
     "webpack": "^1.13.1"

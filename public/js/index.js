@@ -38,6 +38,7 @@ function showApplePayButton() {
 * Triggered when the Apple Pay button is pressed
 */
 function applePayButtonClicked() {
+	log("supportsVersion 3 ?"+ ApplePaySession.supportsVersion(3));
 	const paymentRequest = {
 		countryCode: 'SE',
 		currencyCode: 'SEK',
@@ -54,6 +55,12 @@ function applePayButtonClicked() {
 				identifier: 'express',
 				detail: 'Delivers in two business days',
 			},
+			{
+				"label": "C&C",
+				"detail": "13, avenue CDG, xxx, France",
+				"amount": "0.00",
+				"identifier": "FreeShip"
+			}
 		],
 
 		lineItems: [
@@ -67,16 +74,23 @@ function applePayButtonClicked() {
 			label: 'Apple Pay Example',
 			amount: '10.99',
 		},
+		shippingContact:{
+			"country":"Suède",
+			"countryCode":"SE",
+			"familyName":"Test1",
+			"givenName":"Test1",
+			"locality":"Stockholm",
+			"postalCode":"11145",
+		},
 
-		supportedNetworks:[ 'amex', 'discover', 'masterCard', 'visa'],
+		supportedNetworks:['amex', 'discover', 'masterCard', 'visa'],
 		merchantCapabilities: [ 'supports3DS' ],
 
-		requiredBillingContactFields: [ "email", "name", "phone", "postalAddress" ],
-		requiredShippingContactFields: [ "email", "name", "phone", "postalAddress" ],
+		requiredBillingContactFields: [ "phone","name", "postalAddress" ],
+		requiredShippingContactFields: [ "phone","name", "postalAddress" ],
 		shippingType: "delivery"
 	};
-
-	const session = new ApplePaySession(1, paymentRequest);
+	const session = new ApplePaySession(3, paymentRequest);
 	
 	/**
 	* Merchant Validation
@@ -86,7 +100,7 @@ function applePayButtonClicked() {
 		const validationURL = event.validationURL;
 		getApplePaySession(event.validationURL).then(function(response) {
 			log("Validate merchant");
-  			log(JSON.stringify(response));
+  			//log(JSON.stringify(response));
   			session.completeMerchantValidation(response);
 		});
 	};
@@ -98,7 +112,7 @@ function applePayButtonClicked() {
 	* which method was selected.
 	*/
 	session.onshippingmethodselected = (event) => {
-		log("onshippingmethodselected: " + JSON.stringify(event.shippingMethod));
+		//log("onshippingmethodselected: " + JSON.stringify(event.shippingMethod));
 		const shippingCost = event.shippingMethod.identifier === 'free' ? '0.00' : '5.00';
 		const totalCost = event.shippingMethod.identifier === 'free' ? '8.99' : '13.99';
 
@@ -113,44 +127,38 @@ function applePayButtonClicked() {
 			label: 'Apple Pay Example',
 			amount: totalCost,
 		};
-
+		
 		session.completeShippingMethodSelection(ApplePaySession.STATUS_SUCCESS, total, lineItems);
-	};/*
-	session.onshippingcontactselected = function(event) {
-		log(JSON.stringify(event.shippingContact));
-		var newLineItems = [
+	
+		
+	};
+	
+	session.onshippingcontactselected = function onshippingcontactselected(event) {
+        //onshippingcontactselectedCount += 1;
+        var shippingContact = event.shippingContact;
+        log('Shipping contact was selected: \n' + JSON.stringify(shippingContact, undefined, 4) + '\n');
+
+		const lineItems = [
 			{
 				label: 'Shipping',
-				amount: shippingCost,
+				amount: '2.00',
 			},
 		];
-		var newShippingMethods = [
-			{
-				label: 'Express Shipping',
-				amount: '5.00',
-				identifier: 'express',
-				detail: 'Delivers in two business days',
-			},
-			{
-				label: 'Super Express Shipping',
-				amount: '10.00',
-				identifier: 'Super express',
-				detail: 'Delivers in 1 business days',
-			},
-		];
-		var newTotal = {
-			label: 'Apple Pay Example',
-			amount: totalCost,
-		};
-			
-		
-	//	session.completeShippingContactSelection(ApplePaySession.STATUS_SUCCESS, newShippingMethods, newTotal, newLineItems );
-		
-		session.completeShippingContactSelection(null, newLineItems, newShippingMethods, newTotal );
-		
-		
-	}*/
 
+		const total = {
+			label: 'Apple Pay Example',
+			amount: '10.01',
+		};
+        // make sure we use new items if it exists
+        var update = {
+			errors: [],
+            newTotal: total,
+            newLineItems: lineItems
+        };
+       
+
+        session.completeShippingContactSelection(update);
+    };
 	
 	/**
 	* Payment Authorization
@@ -162,9 +170,7 @@ function applePayButtonClicked() {
 		// Send payment for processing...
 		const payment = event.payment;
 
-		//log("onpaymentauthorized: "+  JSON.stringify(payment));
-		// ...return a status and redirect to a confirmation page
-		log(JSON.stringify(payment));
+		//log(JSON.stringify(payment));
 		
 		doAuth(JSON.stringify(payment)).then( function(response) {
 			log("authorisation: " + JSON.stringify(response));

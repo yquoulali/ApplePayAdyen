@@ -1,0 +1,10 @@
+
+const APPLE_PAY_CERTIFICATE_PATH = "./certificates/merchant.pem";
+const SSL_CERTIFICATE_PATH = "./certificates/cert.cert";
+const SSL_KEY_PATH = "./certificates/key.key";
+const MERCHANT_IDENTIFIER = "merchant.com.se.fnb.test.chanel";
+const MERCHANT_DOMAIN = "uat-v3-www.chanel.com";
+
+
+			user : 'ws_444433@Company.Chanel',
+			pass : '2mvZ}rQ*u^btvm#bTH-5rJsQ6'

@@ -12,19 +12,22 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const https = require("https");
 const request = require("request");
+const PropertiesReader = require('properties-reader');
 //require('request-debug')(request);
 
-/**
-* IMPORTANT
-* Change these paths to your own SSL and Apple Pay certificates,
-* with the appropriate merchant identifier and domain
-* See the README for more information.
-*/
-const APPLE_PAY_CERTIFICATE_PATH = "./certificates/merchant.pem";
-const SSL_CERTIFICATE_PATH = "./certificates/cert.cert";
-const SSL_KEY_PATH = "./certificates/key.key";
-const MERCHANT_IDENTIFIER = "merchant.com.se.fnb.test.xx";
-const MERCHANT_DOMAIN = "uat-v3-www.xx.com";
+
+var properties = PropertiesReader('local.properties');
+
+const env = properties.get('main.env');
+
+const SSL_CERTIFICATE_PATH = properties.get('main.ssl.certificate.path');
+const SSL_KEY_PATH = properties.get('main.ssl.key.path');
+
+const APPLE_PAY_CERTIFICATE_PATH = properties.get(env+'.apple.pay.certificate.path');
+const MERCHANT_IDENTIFIER =  properties.get(env+'.apple.pay.merchant.identifier');
+const MERCHANT_DOMAIN =  properties.get(env+'.apple.pay.merchant.domain');
+console.log("Loading env: "+ env);
+
 
 try {
   fs.accessSync(APPLE_PAY_CERTIFICATE_PATH);
@@ -86,47 +89,48 @@ app.post('/log', function (req, res) {
 	console.log("message:" + req.body.message);
 });
 app.post('/doAuth', function (req, res) {
-	//console.log("auth:" + JSON.stringify(req.body));
-	// 
-	//console.log(req.body.token.paymentData.data);
+	console.log("auth:" + JSON.stringify(req.body));
+	var authorisation = properties.get('adyen.authorisation.active');
 	// We must provide our Apple Pay certificate, merchant ID, domain name, and display name
-	const options = {
-		url: 'https://pal-test.adyen.com/pal/servlet/Payment/authorise',
-		method: 'post',
-		body: {
-			amount: {value: 1099, currency: 'SEK' },
-			reference: '0012600',
-			merchantAccount: 'Chanel_SE_ECOM',
-			returnUrl: "https://int-v3-www.chanel.com/",
-			additionalData:{
-			  "payment.token": req.body.token.paymentData
-		  }
-		},
-		auth : {
-			user : 'ws_xx@Company.xx',
-			pass : 'xxxx'
-		},
-		json: true,
-	}
+	if(authorisation){
+		const options = {
+			url: 'https://pal-test.adyen.com/pal/servlet/Payment/authorise',
+			method: 'post',
+			body: {
+				amount: {value: 1099, currency: 'SEK' },
+				reference: '0012600',
+				merchantAccount: 'Chanel_SE_ECOM',
+				returnUrl: "https://uat-v3-www.chanel.com/",
+				additionalData:{
+				  "payment.token": req.body.token.paymentData
+			  }
+			},
+			auth : {
+				user : 'ws_444433@Company.Chanel',
+				pass : '2mvZ}rQ*u^btvm#bTH-5rJsQ6'
+			},
+			json: true,
+		}
 
-	// Send the request to the Apple Pay server and return the response to the client
-	request(options, function(err, response, body) {
-		//console.log('REQUEST RESULTS:', err, res.statusCode, body);
-		if (err) {
-			console.log('Error generating Apple Pay session!');
-			console.log(err, response, body);
-			res.status(500).send(body);
-		}
-		console.log(JSON.stringify(body));
-		if(body.resultCode == 'Authorised'){
-			console.log("auth: OK");
-			res.send(JSON.stringify({success: true}));
-		}else{
-			console.log("auth: KO");
-			res.send(JSON.stringify({success: false}));
-		}
-		
-	});
+		// Send the request to the Apple Pay server and return the response to the client
+		request(options, function(err, response, body) {
+			console.log('REQUEST RESULTS:', err, res.statusCode, body);
+			//console.log(JSON.stringify(body));
+			if (err) {
+				console.log('Error generating Apple Pay session!');
+				console.log(err, response, body);
+				res.status(500).send(body);
+			}
+			if(body.resultCode == 'Authorised'){
+				console.log("auth: OK");
+				res.send(JSON.stringify({success: true}));
+			}else{
+				console.log("auth: KO");
+				res.send(JSON.stringify({success: false}));
+			}
+			
+		});
+	}
 	
 });
 /**
@@ -136,4 +140,4 @@ https.createServer({
 	key: sslKey,
 	cert: sslCert,
 }, app).listen(4430);
-console.log('Server running at https://127.0.0.1:4430/');
+console.log('Server running at https://'+MERCHANT_DOMAIN+':4430/ for merchant '+ MERCHANT_DOMAIN);
