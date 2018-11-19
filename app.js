@@ -85,9 +85,7 @@ app.post('/getApplePaySession', function (req, res) {
 		res.send(body);
 	});
 });
-app.post('/log', function (req, res) {
-	console.log("message:" + req.body.message);
-});
+
 app.post('/doAuth', function (req, res) {
 	console.log("auth:" + JSON.stringify(req.body));
 	var authorisation = properties.get('adyen.authorisation.active');
@@ -99,15 +97,15 @@ app.post('/doAuth', function (req, res) {
 			body: {
 				amount: {value: 1099, currency: 'SEK' },
 				reference: '0012600',
-				merchantAccount: 'Chanel_SE_ECOM',
+				merchantAccount: properties.get('adyen.merchant'),
 				returnUrl: "https://uat-v3-www.chanel.com/",
 				additionalData:{
 				  "payment.token": req.body.token.paymentData
 			  }
 			},
 			auth : {
-				user : 'ws_444433@Company.Chanel',
-				pass : '2mvZ}rQ*u^btvm#bTH-5rJsQ6'
+				user : properties.get('adyen.user'),
+				pass : properties.get('adyen.password')
 			},
 			json: true,
 		}
@@ -130,9 +128,16 @@ app.post('/doAuth', function (req, res) {
 			}
 			
 		});
+	}else{
+		res.send(JSON.stringify({success: true}));
 	}
 	
 });
+
+app.post('/log', function (req, res) {
+	console.log("message:" + req.body.message);
+});
+
 /**
 * Start serving the app.
 */
